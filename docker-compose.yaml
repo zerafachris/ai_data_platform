@@ -18,7 +18,7 @@ services:
       networks:
         - confluent
 
-  kafka-broker:
+  broker:
     image: confluentinc/cp-server:7.4.0
     hostname: broker
     container_name: broker
@@ -136,7 +136,7 @@ services:
   airflow-scheduler:
     image: apache/airflow:2.6.0-python3.9
     depends_on:
-      webserver:
+      airflow-webserver:
         condition: service_healthy
     volumes:
       - ./airflow/dags:/opt/airflow/dags
