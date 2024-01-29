@@ -18,7 +18,7 @@ services:
       networks:
         - confluent
 
-  broker:
+  kafka-broker:
     image: confluentinc/cp-server:7.4.0
     hostname: broker
     container_name: broker
@@ -104,7 +104,7 @@ services:
       timeout: 10s
       retries: 5
 
-  webserver:
+  airflow-webserver:
     image: apache/airflow:2.6.0-python3.9
     command: webserver
     entrypoint: ['/opt/airflow/script/entrypoint.sh']
@@ -120,9 +120,9 @@ services:
         max-size: 10m
         max-file: "3"
     volumes:
-      - ./dags:/opt/airflow/dags
-      - ./script/entrypoint.sh:/opt/airflow/script/entrypoint.sh
-      - ./requirements.txt:/opt/airflow/requirements.txt
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/script/entrypoint.sh:/opt/airflow/script/entrypoint.sh
+      - ./airflow/requirements.txt:/opt/airflow/requirements.txt
     ports:
       - "8080:8080"
     healthcheck:
@@ -133,7 +133,7 @@ services:
     networks:
       - confluent
 
-  scheduler:
+  airflow-scheduler:
     image: apache/airflow:2.6.0-python3.9
     depends_on:
       webserver:
@@ -164,51 +164,58 @@ services:
     networks:
       - confluent
 
-  # clickhouse:
-  #   image: clickhouse/clickhouse-server:23.12-alpine
-  #   user: "101:101"
-  #   container_name: clickhouse
-  #   hostname: clickhouse
-  #   volumes:
-  #     - ./clickhouse/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
-  #     - ./clickhouse/config.d/config.xml:/etc/clickhouse-server/config.d/config.xml
-  #   ports:
-  #     - "127.0.0.1:8123:8123"
-  #     - "127.0.0.1:9000:9000"
-  #   networks:
-  #     - confluent  
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.12-alpine
+    user: "101:101"
+    container_name: clickhouse
+    hostname: clickhouse
+    volumes:
+      - ./clickhouse/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
+      - ./clickhouse/config.d/config.xml:/etc/clickhouse-server/config.d/config.xml
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    networks:
+      - confluent  
 
-  # grafana:
-  #   build: 
-  #     context: ${PWD}/grafana
-  #     dockerfile: grafana.Dockerfile
-  #   container_name: grafana
-  #   hostname: grafana
-  #   volumes:
-  #     - ./grafana:/etc/grafana/provisioning/datasources
-  #   ports:
-  #     - "127.0.0.1:3000:3000"
-  #   depends_on:
-  #     - clickhouse   
-  #   networks:
-  #     - confluent
+  grafana:
+    build: 
+      context: ${PWD}/grafana
+      dockerfile: grafana.Dockerfile
+    container_name: grafana
+    hostname: grafana
+    volumes:
+      - ./grafana:/etc/grafana/provisioning/datasources
+    ports:
+      - "3000:3000"
+    depends_on:
+      - clickhouse   
+    networks:
+      - confluent
 
-  # node-red:
-  #   image: nodered/node-red:3.0.2
-  #   networks:
-  #     - confluent
-
+  node-red:
+    build:
+      context: ./nodered
+      dockerfile: nodered.Dockerfile
+    ports:
+      - 1880:1880
+    networks:
+      - confluent
   
-  # superset:
-  #   build:
-  #     context: ${PWD}/superset
-  #     dockerfile: superset.Dockerfile
-  #   container_name: superset
-  #   hostname: superset
-
-
-
-
-
+  superset:
+    build:
+      context: ./superset
+      dockerfile: superset.Dockerfile
+    container_name: superset
+    hostname: superset
+    environment:
+      - ADMIN_USERNAME=admin
+      - ADMIN_EMAIL=admin@superset.com
+      - ADMIN_PASSWORD=admin
+    ports:
+      - '8088:8088'
+    networks:
+        - confluent
+    
 networks:
   confluent:
