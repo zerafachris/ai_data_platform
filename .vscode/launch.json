@@ -5,11 +5,23 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Airflow - Kafka Stream",
+            "name": "AF - User Stream",
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceRoot}/airflow/dags",
             "program": "kafka_stream.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "env": {
+                "DEBUG":"True"
+            }
+        },
+        {
+            "name": "AF - Casino Stream",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceRoot}/airflow/dags",
+            "program": "casino_stream.py",
             "console": "integratedTerminal",
             "justMyCode": false,
             "env": {

@@ -1,2 +1,3 @@
 apache-airflow==2.8.1
 kafka-python
+numpy==1.26.3
