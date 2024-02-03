@@ -7,7 +7,7 @@ if [ -e "/opt/airflow/requirements.txt" ]; then
 fi
 
 if [ ! -f "/opt/airflow/airflow.db" ]; then
-  airflow db init && \
+  airflow db migrate && \
   airflow users create \
     --username admin \
     --firstname admin \

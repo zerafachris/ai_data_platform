@@ -1,36 +1,30 @@
 version: '3'
 
-services:
+services: 
   zookeeper:
       image: confluentinc/cp-zookeeper:7.4.0
       hostname: zookeeper
       container_name: zookeeper
       ports:
-        - "2181:2181"
+        - 2181:2181
       environment:
         ZOOKEEPER_CLIENT_PORT: 2181
         ZOOKEEPER_TICK_TIME: 2000
-      healthcheck:
-        test: ['CMD', 'bash', '-c', "echo 'ruok' | nc localhost 2181"]
-        interval: 10s
-        timeout: 5s
-        retries: 5
       networks:
-        - confluent
+        - ai_data_platform
 
   broker:
     image: confluentinc/cp-server:7.4.0
     hostname: broker
     container_name: broker
     depends_on:
-      zookeeper:
-        condition: service_healthy
+      - zookeeper
     ports:
-      - "9092:9092"
-      - "9101:9101"
+      - 9092:9092
+      - 9101:9101
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
       KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
@@ -48,64 +42,59 @@ services:
       CONFLUENT_METRICS_ENABLE: 'false'
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
     networks:
-      - confluent
-    healthcheck:
-      test: [ "CMD", "bash", "-c", 'nc -z localhost 9092' ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - ai_data_platform
 
   schema-registry:
     image: confluentinc/cp-schema-registry:7.4.0
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
-      broker:
-        condition: service_healthy
+      - broker
     ports:
-      - "8081:8081"
+      - 8081:8081
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
-      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: broker:29092
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
     networks:
-      - confluent
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8081/" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-  
+      - ai_data_platform
+    
   control-center:
     image: confluentinc/cp-enterprise-control-center:7.4.0
     hostname: control-center
     container_name: control-center
     depends_on:
-      broker:
-        condition: service_healthy
-      schema-registry:
-        condition: service_healthy
+      - broker
+      - schema-registry
     ports:
-      - "9021:9021"
+      - 9021:9021
     environment:
-      CONTROL_CENTER_BOOTSTRAP_SERVERS: 'broker:29092'
-      CONTROL_CENTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: broker:29092
+      CONTROL_CENTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       CONTROL_CENTER_REPLICATION_FACTOR: 1
       CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
       CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
       CONFLUENT_METRICS_TOPIC_REPLICATION: 1
-      CONFLIENT_METRICS_ENABLE: 'false'
+      CONFLIENT_METRICS_ENABLE: false
       PORT: 9021
     networks:
-      - confluent
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9021/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+      - ai_data_platform
+
+  postgres:
+    image: postgres:14.0
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    networks:
+      - ai_data_platform
 
   airflow-webserver:
-    image: apache/airflow:2.6.0-python3.9
+    image: apache/airflow:2.8.1-python3.11
     command: webserver
     entrypoint: ['/opt/airflow/script/entrypoint.sh']
     depends_on:
@@ -114,7 +103,9 @@ services:
       - LOAD_EX=n
       - EXECUTOR=Sequential
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
-      - AIRFLOW_WEBSERVER_SECRET_KEY=this_is_a_very_secured_key
+      - AIRFLOW__WEBSERVER__SECRET_KEY=this_is_a_very_secured_key
+      - AIRFLOW__WEBSERVER__SECRET_KEY_CMD=this_is_a_very_secured_key
+      - AIRFLOW__WEBSERVER__SECRET_KEY_SECRET=this_is_a_very_secured_key
     logging:
       options:
         max-size: 10m
@@ -131,10 +122,10 @@ services:
       timeout: 30s
       retries: 3
     networks:
-      - confluent
+      - ai_data_platform
 
   airflow-scheduler:
-    image: apache/airflow:2.6.0-python3.9
+    image: apache/airflow:2.8.1-python3.11
     depends_on:
       airflow-webserver:
         condition: service_healthy
@@ -146,23 +137,13 @@ services:
       - LOAD_EX=n
       - EXECUTOR=Sequential
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
-      - AIRFLOW_WEBSERVER_SECRET_KEY=this_is_a_very_secured_key
-    command: bash -c "pip install -r ./requirements.txt && airflow db upgrade && airflow scheduler"
+      - AIRFLOW__WEBSERVER__SECRET_KEY=this_is_a_very_secured_key
+      - AIRFLOW__WEBSERVER__SECRET_KEY_CMD=this_is_a_very_secured_key
+      - AIRFLOW__WEBSERVER__SECRET_KEY_SECRET=this_is_a_very_secured_key
+    command: bash -c "pip install -r ./requirements.txt && airflow db migrate && airflow scheduler"
     networks:
-      - confluent
+      - ai_data_platform
 
-  postgres:
-    image: postgres:14.0
-    environment:
-      - POSTGRES_USER=airflow
-      - POSTGRES_PASSWORD=airflow
-      - POSTGRES_DB=airflow
-    logging:
-      options:
-        max-size: 10m
-        max-file: "3"
-    networks:
-      - confluent
 
   clickhouse:
     image: clickhouse/clickhouse-server:23.12-alpine
@@ -172,50 +153,51 @@ services:
     volumes:
       - ./clickhouse/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
       - ./clickhouse/config.d/config.xml:/etc/clickhouse-server/config.d/config.xml
+      - ./clickhouse/docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
     ports:
       - "8123:8123"
       - "9000:9000"
     networks:
-      - confluent  
+      - ai_data_platform  
 
-  grafana:
-    build: 
-      context: ${PWD}/grafana
-      dockerfile: grafana.Dockerfile
-    container_name: grafana
-    hostname: grafana
-    volumes:
-      - ./grafana:/etc/grafana/provisioning/datasources
-    ports:
-      - "3000:3000"
-    depends_on:
-      - clickhouse   
-    networks:
-      - confluent
+  # grafana:
+  #   build: 
+  #     context: ${PWD}/grafana
+  #     dockerfile: grafana.Dockerfile
+  #   container_name: grafana
+  #   hostname: grafana
+  #   volumes:
+  #     - ./grafana:/etc/grafana/provisioning/datasources
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - clickhouse   
+  #   networks:
+  #     - ai_data_platform
 
-  node-red:
-    build:
-      context: ./nodered
-      dockerfile: nodered.Dockerfile
-    ports:
-      - 1880:1880
-    networks:
-      - confluent
+  # node-red:
+  #   build:
+  #     context: ./nodered
+  #     dockerfile: nodered.Dockerfile
+  #   ports:
+  #     - 1880:1880
+  #   networks:
+  #     - ai_data_platform
   
-  superset:
-    build:
-      context: ./superset
-      dockerfile: superset.Dockerfile
-    container_name: superset
-    hostname: superset
-    environment:
-      - ADMIN_USERNAME=admin
-      - ADMIN_EMAIL=admin@superset.com
-      - ADMIN_PASSWORD=admin
-    ports:
-      - '8088:8088'
-    networks:
-        - confluent
+  # superset:
+  #   build:
+  #     context: ./superset
+  #     dockerfile: superset.Dockerfile
+  #   container_name: superset
+  #   hostname: superset
+  #   environment:
+  #     - ADMIN_USERNAME=admin
+  #     - ADMIN_EMAIL=admin@superset.com
+  #     - ADMIN_PASSWORD=admin
+  #   ports:
+  #     - '8088:8088'
+  #   networks:
+  #       - ai_data_platform
     
 networks:
-  confluent:
+  ai_data_platform:
