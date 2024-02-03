@@ -116,19 +116,13 @@ services:
       - ./airflow/requirements.txt:/opt/airflow/requirements.txt
     ports:
       - "8080:8080"
-    healthcheck:
-      test: ['CMD-SHELL', "[ -f /opt/airflow/airflow-webserver.pid ]"]
-      interval: 30s
-      timeout: 30s
-      retries: 3
     networks:
       - ai_data_platform
 
   airflow-scheduler:
     image: apache/airflow:2.8.1-python3.11
     depends_on:
-      airflow-webserver:
-        condition: service_healthy
+      - airflow-webserver
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/script/entrypoint.sh:/opt/airflow/script/entrypoint.sh
@@ -160,30 +154,21 @@ services:
     networks:
       - ai_data_platform  
 
-  # grafana:
-  #   build: 
-  #     context: ${PWD}/grafana
-  #     dockerfile: grafana.Dockerfile
-  #   container_name: grafana
-  #   hostname: grafana
-  #   volumes:
-  #     - ./grafana:/etc/grafana/provisioning/datasources
-  #   ports:
-  #     - "3000:3000"
-  #   depends_on:
-  #     - clickhouse   
-  #   networks:
-  #     - ai_data_platform
+  grafana:
+    build: 
+      context: ./grafana
+      dockerfile: grafana.Dockerfile
+    container_name: grafana
+    hostname: grafana
+    volumes:
+      - ./grafana:/etc/grafana/provisioning/datasources
+    ports:
+      - "3000:3000"
+    depends_on:
+      - clickhouse   
+    networks:
+      - ai_data_platform
 
-  # node-red:
-  #   build:
-  #     context: ./nodered
-  #     dockerfile: nodered.Dockerfile
-  #   ports:
-  #     - 1880:1880
-  #   networks:
-  #     - ai_data_platform
-  
   superset:
     build:
       context: ./superset
@@ -198,6 +183,15 @@ services:
       - '8088:8088'
     networks:
         - ai_data_platform
-    
+
+  node-red:
+    build:
+      context: ./nodered
+      dockerfile: nodered.Dockerfile
+    ports:
+      - 1880:1880
+    networks:
+      - ai_data_platform
+      
 networks:
   ai_data_platform:

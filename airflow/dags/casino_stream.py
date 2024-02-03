@@ -42,7 +42,7 @@ def get_casino_data():
     game_id = random.randint(0,1000)
     game_type = map_game_type[ game_id%6]
     bet_amount = np.round( np.abs(np.random.laplace(0, 20, 1)[0]), 4)
-    win_amount = np.round(bet_amount * np.abs(np.random.laplace(0, 20,1)[0]), 4) if is_win else 0
+    win_amount = np.round(bet_amount * (np.abs(np.random.laplace(1, 5,1)[0]) +1), 4) if is_win else 0
     bonus_cost_amount = win_amount if is_bonus and is_win else 0
 
     
@@ -66,7 +66,7 @@ def get_casino_data():
 def stream_data():
     producer = KafkaProducer(bootstrap_servers=['localhost:9092' if os.getenv("DEBUG", 'False') == 'True' else 'broker:29092'],
                              max_block_ms=5000)
-    curr_time = time.time()
+    curr_time = time.time() - run_duration
 
     while True:
         if time.time() > curr_time + run_duration:
