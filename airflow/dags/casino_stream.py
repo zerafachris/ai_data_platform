@@ -66,7 +66,7 @@ def get_casino_data():
 def stream_data():
     producer = KafkaProducer(bootstrap_servers=['localhost:9092' if os.getenv("DEBUG", 'False') == 'True' else 'broker:29092'],
                              max_block_ms=5000)
-    curr_time = time.time() - run_duration
+    curr_time = time.time()
 
     while True:
         if time.time() > curr_time + run_duration:
