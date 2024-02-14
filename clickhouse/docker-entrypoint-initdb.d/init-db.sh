@@ -7,17 +7,20 @@ clickhouse client -n <<-EOSQL
     CREATE DATABASE IF NOT EXISTS dwh;
     CREATE DATABASE IF NOT EXISTS marts;
 
+    drop table if exists stage.mv_null_fact_game;
     drop table if exists stage.kafka_fact_game;
     drop table if exists stage.null_fact_game;
-    drop table if exists stage.mv_null_fact_game;
 
-    drop table if exists dwh._fact_game;
     drop table if exists dwh.mv_fact_game;
+    drop table if exists dwh._fact_game;
 
-    drop table if exists marts._daily_fact_game;
     drop table if exists marts.mv_daily_fact_game;
+    drop table if exists marts._daily_fact_game;
     drop table if exists marts.daily_fact_game;
 
+    DROP TABLE IF EXISTS marts.mv_redis_daily_fact_game;
+    DROP TABLE IF EXISTS marts.redis_daily_fact_game;
+    
     -- stage
     CREATE TABLE IF NOT EXISTS stage.kafka_fact_game
     (
@@ -116,7 +119,30 @@ clickhouse client -n <<-EOSQL
     , sum(bonus_amount) as bonus_amount
         FROM
             marts._daily_fact_game
-        GROUP BY customer_id, activity_date, game_id, game_type;   
+        GROUP BY customer_id, activity_date, game_id, game_type;
 
+    CREATE TABLE if not exists marts.redis_daily_fact_game
+    (
+        key        String,
+        customer_id  Int32,
+        game_type LowCardinality(String),
+        game_count   Decimal(18, 4),
+        bet_amount   Decimal(18, 4),
+        win_amount   Decimal(18, 4),
+        bonus_amount Decimal(18, 4)
+    ) ENGINE = Redis('redis:6379') PRIMARY KEY (key);
 
+    CREATE MATERIALIZED VIEW IF NOT EXISTS marts.mv_redis_daily_fact_game TO marts.redis_table AS
+    SELECT
+        concat(customer_id, ':', game_type) as key
+    , customer_id
+    , game_type
+    , count(game_id)                      as game_count
+    , sum(bet_amount)                     as bet_amount
+    , sum(win_amount)                     as win_amount
+    , sum(bonus_amount)                   as bonus_amount
+        FROM
+            marts._daily_fact_game
+        group by customer_id, game_type;
+    
 EOSQL

@@ -138,9 +138,19 @@ services:
     networks:
       - ai_data_platform
 
+  redis:
+      image: redis:7.2.4-alpine
+      restart: always
+      ports:
+        - 6379:6379
+      command: redis-server --save 20 1 --loglevel warning
+      networks:
+        - ai_data_platform
 
   clickhouse:
     image: clickhouse/clickhouse-server:23.12-alpine
+    depends_on:
+      - redis
     user: "101:101"
     container_name: clickhouse
     hostname: clickhouse
@@ -192,6 +202,6 @@ services:
       - 1880:1880
     networks:
       - ai_data_platform
-      
+
 networks:
   ai_data_platform:
