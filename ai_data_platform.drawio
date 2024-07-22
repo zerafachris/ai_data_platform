@@ -1,0 +1,41 @@
+<mxfile host="app.diagrams.net" modified="2024-07-22T19:48:26.983Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36" version="24.7.3" etag="-EJ8NQr9RuZ6uJVj4Ovz" type="github">
+  <diagram name="Page-1" id="UgdyTVnZ0zY9PxhbpRnq">
+    <mxGraphModel>
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2" value="Apache Airflow" style="whiteSpace=wrap;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="179" width="122" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="3" value="Components" style="rounded=1;absoluteArcSize=1;arcSize=14;whiteSpace=wrap;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="189" y="102" width="103" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="4" value="Generating simulated casino data" style="whiteSpace=wrap;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry y="204" width="256" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="5" value="PostgreSQL" style="whiteSpace=wrap;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="306" y="204" width="94" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="6" value="Workflow orchestration and scheduling" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=0.99;entryX=0.5;entryY=0;" edge="1" parent="1" source="2" target="3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7" value="Manages DAGs" style="curved=1;startArrow=none;endArrow=block;exitX=0.14;exitY=0.99;entryX=0.5;entryY=0;" edge="1" parent="1" source="3" target="4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="128" y="170" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="8" value="Scheduling tasks" style="curved=1;startArrow=none;endArrow=block;exitX=0.86;exitY=0.99;entryX=0.5;entryY=0;" edge="1" parent="1" source="3" target="5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="353" y="170" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
