@@ -1,0 +1,41 @@
+<mxfile host="app.diagrams.net" modified="2024-07-22T20:01:38.170Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36" etag="UvmB-MC9cdj1Wv4L4xAv" version="24.7.3" type="github">
+  <diagram name="Page-1" id="XGHTjjKf8hPSQIjwmyhm">
+    <mxGraphModel dx="1853" dy="1828" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2" value="Apache Airflow" style="whiteSpace=wrap;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="179" width="122" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="3" value="Components" style="rounded=1;absoluteArcSize=1;arcSize=14;whiteSpace=wrap;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="189" y="102" width="103" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="4" value="Generating simulated casino data" style="whiteSpace=wrap;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry y="204" width="256" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="5" value="PostgreSQL" style="whiteSpace=wrap;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="306" y="204" width="94" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="6" value="Workflow orchestration and scheduling" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=0.99;entryX=0.5;entryY=0;" parent="1" source="2" target="3" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7" value="Manages DAGs" style="curved=1;startArrow=none;endArrow=block;exitX=0.14;exitY=0.99;entryX=0.5;entryY=0;" parent="1" source="3" target="4" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="128" y="170" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="8" value="Scheduling tasks" style="curved=1;startArrow=none;endArrow=block;exitX=0.86;exitY=0.99;entryX=0.5;entryY=0;" parent="1" source="3" target="5" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="353" y="170" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
