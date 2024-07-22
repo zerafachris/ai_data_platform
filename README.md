@@ -28,6 +28,8 @@ This project aims to illustrate a robust, scalable, and efficient data engineeri
 ## 2. System Architecture
 The system architecture consists of multiple interconnected components that work together to achieve real-time data processing and analytics. Below is a high-level diagram of the architecture:
 
+![System Architecture Diagram](./assets/ai_data_platform.drawio.png)
+
 
 ### Key Components:
 
