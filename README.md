@@ -1,4 +1,4 @@
-# End-to-End Data Engineering System for Real-Time Data in AI Systems
+# End-to-End Platform for Real-Time Data Processing and Machine Learning
 ## Table of Contents
 1. Introduction
 3. System Architecture
